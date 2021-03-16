@@ -10,6 +10,6 @@ This talk presents a solution proposal that is easy to apply, integrates seamles
 
 Markus Werle is an aeronautics engineer who became C++ addicted because he needed Expression Templates for the automatic generation of finite element solvers. 
 
-For more than a decade Markus worked in the automotive sector, creating algorithms and a wide range of data processing libraries and tools in C++, C++/CLI, and C#. The focus was on robust, reusable core libraries and addressing complexity by modularity. Markus was responsible for code organization and streamlining a certified agile software development process.
+For more than a decade Markus worked in the automotive sector, creating algorithms and a wide range of data processing libraries and tools in C++, C++/CLI, and - with deep regret for the wasted time - in C#. The focus was on robust, reusable core libraries and addressing complexity by modularity. Markus was responsible for code organization and streamlining a certified agile software development process.
 
 In the current position as CTO at [Ducktrain / DroidDrive GmbH](https://ducktrain.io), Markus develops semi-autonomous vehicles for fun and profit.

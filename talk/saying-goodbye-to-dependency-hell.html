@@ -2,33 +2,107 @@
 <html>
 
 <head>
-    <title>Title</title>
+    <title>A Gentle Introduction to Reactive Extensions (C++)</title>
     <meta charset="utf-8">
-    <style>
-        @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-        @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-        @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
-
-        body {
-            font-family: 'Droid Serif';
-        }
-
-        h1,
-        h2,
-        h3 {
-            font-family: 'Yanone Kaffeesatz';
-            font-weight: normal;
-        }
-
-        .remark-code,
-        .remark-inline-code {
-            font-family: 'Ubuntu Mono';
-        }
-    </style>
+    <link rel="stylesheet" href="./fonts.css" />
+    <link rel="stylesheet" href="./open-sans.css" />
+    <link rel="stylesheet" href="./talk.css" type="text/css">
 </head>
 
-<body>
-    <textarea id="source">
+
+<textarea id="source">
+
+layout: true
+
+<div class="footer"><div class="flexcontainer"><span>.body[[https://ducktrain.io](https://ducktrain.io)]</span>
+<span>.center[emBo++ 2021]</span><span>.body[&copy; 2021 Markus Werle ([github](http://github.com/daixtrose) [linkedin](https://www.linkedin.com/in/markus-werle-04305a12a/))]</span></div></div>
+
+---
+
+class: middle
+template: inverse
+background-color: gray
+
+.center[
+
+
+# Saying Goodbye to Dependency Hell with Git and Modern CMake 
+
+## And a Shell Script 
+Duration: 1:05:42 (#NoEstimates)
+
+<!-- .accent[
+### And a Shell Script 
+Duration: 1:05:42 (#NoEstimates)
+] -->
+
+![](images/embo-logo_03.png)
+
+]
+
+
+---
+
+layout: false
+
+# This talk and its code is Open Source&#8482;	
+
+.split-50[
+.column[
+&nbsp;<br>
+- You can download this talk **and** code samples in the form of unit tests
+    - https://github.com/daixtrose/saying-goodbye-to-dependency-hell
+- Published under MIT licence
+    - The code for the talk framework is based on [remark.js](https://github.com/gnab/remark) and is stolen from [Kirk Shoop's Intro to RxCpp](https://github.com/kirkshoop/introductionToRxcpp) 
+    - Please contribute fixes or [file an issue](https://github.com/daixtrose/saying-goodbye-to-dependency-hell/issues) if you find errors or know about improvements. 
+]
+.column[
+![](images/qr-code-for-repo.svg)
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+]
+]
+
+---
+
+layout: true
+background-image: url(images/)
+
+---
+
+# Disclaimer
+
+.split-50[
+.column[
+
+- This is not **The Perfect Solution**, but my solution for managing dependencies
+- Please give me feedback after the talk  
+]
+.column[
+![](images/qr-code-for-repo.svg)
+]
+]
+
+    
+---
+
+class: middle
+
+.center[
+
+# Where do we come from? 
+
+.accent[
+### Looking Back Over My Shoulder
+]
+]
+        
+        
 
 class: center, middle
 
@@ -47,16 +121,16 @@ class: center, middle
 # Introduction
 
     </textarea>
-    <script src="remark-latest.min.js">
-    </script>
-    <script>
-        var slideshow = remark.create({
-            ratio: "16:9",
-            highlightLanguage: "cpp",
-            highlightStyle: "tomorrow",
-            highlightSpans: true,
-        });
-    </script>
+<script src="remark-latest.min.js">
+</script>
+<script>
+    var slideshow = remark.create({
+        ratio: "16:9",
+        highlightLanguage: "cpp",
+        highlightStyle: "tomorrow",
+        highlightSpans: true,
+    });
+</script>
 </body>
 
 </html>
