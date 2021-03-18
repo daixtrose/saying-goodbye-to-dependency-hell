@@ -341,6 +341,13 @@ blockquote p {
     right: 5px;
 }
 
+.fixed-pos-nearly-llc {
+    position: fixed;
+    bottom: 12%;
+    left: 5%;
+}
+
+
 .spark-standfirst,
 .spark-bar-medium {
     font-variant-ligatures: contextual;
@@ -349,4 +356,8 @@ blockquote p {
     font-feature-settings: "calt";
     font-family: 'AtF Spark Bar Medium';
     letter-spacing: 0em;
+}
+
+.white {
+    color: white;
 }
