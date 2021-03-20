@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <title>Saying Goodbye to Dependency Hell with Git and Modern CMake ... and a Shell Script</title>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="./fonts.css" />
-    <link rel="stylesheet" href="./open-sans.css" />
-    <link rel="stylesheet" href="./talk.css" type="text/css">
+  <title>Saying Goodbye to Dependency Hell with Git and Modern CMake ... and a Shell Script</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="./fonts.css" />
+  <link rel="stylesheet" href="./open-sans.css" />
+  <link rel="stylesheet" href="./talk.css" type="text/css">
 </head>
 
 
@@ -96,7 +96,7 @@ background-size: cover
 
 layout: false
 
-# Dependency Hell with Git Submodules 
+# Introducing Dependency Hell 
 
 Imagine a RealWorld(TM) example like the following: You are maintaining two tools,
 
@@ -248,14 +248,21 @@ $ cd tool_1
 $ `git submodule update --remote --init --recursive`
 Submodule '3rdParty/lib_A' (https://github.com/dep-hell/lib_A) registered for path '3rdParty/lib_A'
 Submodule '3rdParty/lib_B' (https://github.com/dep-hell/lib_B) registered for path '3rdParty/lib_B'
-Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_A'...
-Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_B'...
-Submodule path '3rdParty/lib_A': checked out 'd8619eb51ace2661c4c2f6a19509dc94a66a726b'
+Cloning into '/emBOCode/tool_1/3rdParty/lib_A'...
+Cloning into '/emBOCode/tool_1/3rdParty/lib_B'...
+Submodule path '3rdParty/lib_A': checked out '`d8619eb51ace2661c4c2f6a19509dc94a66a726b`'
 Submodule path '3rdParty/lib_B': checked out 'ca0c74edecc4bfe6cbe7496825ca448d200700f3'
 Submodule '3rdParty/libFreeAssange' (https://github.com/dep-hell/libFreeAssange) registered for path '3rdParty/lib_B/3rdParty/libFreeAssange'
-Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_B/3rdParty/libFreeAssange'...
+Cloning into '/emBOCode/tool_1/3rdParty/lib_B/3rdParty/libFreeAssange'...
 Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050aade95cb847771670c229ed9e64efd'
 ```
+
+???
+
+- I hope you all remember well this command line, because all arguments are crucial for avoiding headaches
+- Note that the submodules are not checked out with the dedicated branches, but use latest tag in this branch
+- We come to this in a minute  
+
 ---
 
 # Summary: This Is How Our Dependency Hell Looks Like
@@ -263,12 +270,12 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 .split-50[
 .column[
 <pre>
-    <span style="font-weight:bold;color:#3333FF;">tool_1</span>
+    <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">tool_1</span>
     ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
     │   ├── <span style="font-weight:bold;color:#3333FF;">lib_A</span>
     │   │   ├── LICENSE
     │   │   └── README.md
-    │   └── <span style="font-weight:bold;color:#3333FF;">lib_B</span>
+    │   └── <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">lib_B</span>
     │       ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
     │       │   └── <span style="font-weight:bold;color:#3333FF;">libFreeAssange</span>
     │       │       ├── LICENSE
@@ -281,7 +288,7 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 ]
 .column[
 <pre>
-    <span style="font-weight:bold;color:#3333FF;">tool_2</span>
+    <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">tool_2</span>
     ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
     │   ├── <span style="font-weight:bold;color:#3333FF;">lib_A</span>
     │   │   ├── LICENSE
@@ -349,6 +356,23 @@ background-size: cover
     
 ---
 
+# CMake - Some Advice
+
+> - Never ever follow any advice that is older than 3 months. 
+>   - Oh oh ... this advice won't age well.
+> - Don't try to use the internet to find out how CMake works 
+> - Maybe even don't try to find out how CMake works at all. 
+>   - See what happened to [Isabella Muerte](https://twitter.com/slurpsmadrips) 
+>   - Read her blog about *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
+> - Best Advice Ever: Read a ... book.
+> - Absolute Best Advice Ever: 
+>   - Read Craig Scott's Seminal Book *Professional CMake: A Practical Guide*   
+>   - Listen to Craig's talks on YouTibe 
+
+
+
+---
+
 class: middle
 
 .center[
@@ -382,23 +406,23 @@ class: center, middle
 <script src="remark-latest.min.js">
 </script>
 <script type="text/javascript">
-    var hljs = remark.highlighter.engine;
+  var hljs = remark.highlighter.engine;
 </script>
 <script src="terminal.language.js" type="text/javascript"></script>
 <script>
-    var slideshow = remark.create({
-        ratio: "16:9",
-        highlightLanguage: "cpp",
-        highlightStyle: "tomorrow",
-        highlightSpans: true,
-    });
+  var slideshow = remark.create({
+    ratio: "16:9",
+    highlightLanguage: "cpp",
+    highlightStyle: "tomorrow",
+    highlightSpans: true,
+  });
 
-    // extract the embedded styling from ansi spans
-    var highlighted = document.querySelectorAll("code.terminal span.hljs-ansi");
-    Array.prototype.forEach.call(highlighted, function (next) {
-        next.insertAdjacentHTML("beforebegin", next.textContent);
-        next.parentNode.removeChild(next);
-    });
+  // extract the embedded styling from ansi spans
+  var highlighted = document.querySelectorAll("code.terminal span.hljs-ansi");
+  Array.prototype.forEach.call(highlighted, function (next) {
+    next.insertAdjacentHTML("beforebegin", next.textContent);
+    next.parentNode.removeChild(next);
+  });
 </script>
 
 
