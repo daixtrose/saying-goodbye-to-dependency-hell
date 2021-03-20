@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>A Gentle Introduction to Reactive Extensions (C++)</title>
+    <title>Saying Goodbye to Dependency Hell with Git and Modern CMake ... and a Shell Script</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="./fonts.css" />
     <link rel="stylesheet" href="./open-sans.css" />
@@ -45,10 +45,10 @@ layout: false
 .split-50[
 .column[
 &nbsp;<br>
-- You can download this talk **and** code samples at https://github.com/daixtrose/saying-goodbye-to-dependency-hell
+- You can download this talk **and** code samples at https://github.com/daixtrose/saying-goodbye-to-dep-hell
 - Code published under MIT licence
     - The code for the talk framework is based on [remark.js](https://github.com/gnab/remark) and is stolen from [Kirk Shoop's Intro to RxCpp](https://github.com/kirkshoop/introductionToRxcpp) 
-    - Please contribute fixes or [file an issue](https://github.com/daixtrose/saying-goodbye-to-dependency-hell/issues) if you find errors or know about improvements. 
+    - Please contribute fixes or [file an issue](https://github.com/daixtrose/saying-goodbye-to-dep-hell/issues) if you find errors or know about improvements. 
 - Fotos published under [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/legalcode) .image-fixed-40[![](images/CC_BY-SA_88x31.png)]   
 ]
 .column[
@@ -91,6 +91,238 @@ background-size: cover
 ]
 ]
 ]
+
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules 
+
+Imagine a RealWorld(TM) example like the following: You are maintaining two tools,
+
+.split-40[
+.column[
+- `tool_1`
+- `tool_2`
+
+which depend on some libraries
+- `lib_A`
+- `lib_B`
+- `lib_C`
+
+Also there is an indirect dependency to 
+- `libFreeAssange` (see next slides)
+
+]
+.column[
+![](images/NamingThings.png)
+]
+]
+
+
+
+
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules - Tool 1 
+
+Now let us set up the dependencies of [`https://github.com/dep-hell/tool_1`](https://github.com/dep-hell/tool_1) 
+
+```bash
+$ git clone https://github.com/dep-hell/tool_1
+$ cd tool_1
+
+# Assuming no dependencies have been configured by now
+$ git `submodule add` -b master-yoda \ 
+  https://github.com/dep-hell/lib_A 3rdParty/`lib_A`
+
+$ git `submodule add` -b master-yoda \
+  https://github.com/dep-hell/lib_B 3rdParty/`lib_B`
+```
+
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules - Tool 1 
+
+```bash
+$ git status
+On branch master-yoda
+Your branch is up to date with 'origin/master-yoda'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        `new file:   .gitmodules`
+        `new file:   3rdParty/lib_A`
+        `new file:   3rdParty/lib_B`
+```
+
+```bash
+$ git commit -m "dependency setup"
+$ git push # I commited to master-yoda here!
+```
+
+
+
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules - Tool 1 
+
+```bash
+$ cat .gitmodules
+[submodule "3rdParty/lib_A"]
+        path = 3rdParty/lib_A
+        url = https://github.com/dep-hell/lib_A
+        branch = master-yoda
+[submodule "3rdParty/lib_B"]
+        path = 3rdParty/lib_B
+        url = https://github.com/dep-hell/lib_B
+        branch = master-yoda
+```
+
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules - Tool 2 
+
+Now let us set up the dependencies of [`https://github.com/dep-hell/tool_2`](https://github.com/dep-hell/tool_2) 
+
+```bash
+$ git clone https://github.com/dep-hell/tool_2
+$ cd tool_2
+
+# Assuming no dependencies have been configured by now
+$ git submodule add -b master-yoda \ 
+  https://github.com/dep-hell/lib_A 3rdParty/lib_A
+
+$ git submodule add -b master-yoda \
+  https://github.com/dep-hell/`lib_C` 3rdParty/`lib_C`
+```
+
+```bash
+$ git commit -m "dependency setup"
+$ git push # I commited to master-yoda here!
+```
+---
+
+layout: false
+
+# Dependency Hell with Git Submodules - Recursive Dependencies
+
+> `lib_A` **and** `lib_B` **both** depend on `https://github.com/dep-hell/libFreeAssange`  
+```
+In order to understand recursion, you must first understand recursion.
+```
+
+```bash
+git clone https://github.com/dep-hell/`lib_B`
+cd lib_B
+git submodule add `-b wikileaks` \ # Watch out for the devils here!
+  https://github.com/dep-hell/libFreeAssange \
+  3rdParty/libFreeAssange && cd ..
+```
+
+```bash
+git clone https://github.com/dep-hell/`lib_C`
+cd lib_C
+git submodule add `-b belmarsh` \ # Watch out for the devils here!
+  https://github.com/dep-hell/libFreeAssange \
+  3rdParty/libFreeAssange
+```
+
+---
+
+# Summary: This Is How Our Dependency Hell Looks Like
+
+```bash
+$ git clone https://github.com/Dep-Hell/tool_1
+Cloning into 'tool_1'...
+[...]
+$ cd tool_1
+$ `git submodule update --remote --init --recursive`
+Submodule '3rdParty/lib_A' (https://github.com/dep-hell/lib_A) registered for path '3rdParty/lib_A'
+Submodule '3rdParty/lib_B' (https://github.com/dep-hell/lib_B) registered for path '3rdParty/lib_B'
+Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_A'...
+Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_B'...
+Submodule path '3rdParty/lib_A': checked out 'd8619eb51ace2661c4c2f6a19509dc94a66a726b'
+Submodule path '3rdParty/lib_B': checked out 'ca0c74edecc4bfe6cbe7496825ca448d200700f3'
+Submodule '3rdParty/libFreeAssange' (https://github.com/dep-hell/libFreeAssange) registered for path '3rdParty/lib_B/3rdParty/libFreeAssange'
+Cloning into '/home/markus/PROJECT/emBOCode/tool_1/3rdParty/lib_B/3rdParty/libFreeAssange'...
+Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050aade95cb847771670c229ed9e64efd'
+```
+---
+
+# Summary: This Is How Our Dependency Hell Looks Like
+
+.split-50[
+.column[
+<pre>
+    <span style="font-weight:bold;color:#3333FF;">tool_1</span>
+    ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+    │   ├── <span style="font-weight:bold;color:#3333FF;">lib_A</span>
+    │   │   ├── LICENSE
+    │   │   └── README.md
+    │   └── <span style="font-weight:bold;color:#3333FF;">lib_B</span>
+    │       ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+    │       │   └── <span style="font-weight:bold;color:#3333FF;">libFreeAssange</span>
+    │       │       ├── LICENSE
+    │       │       └── README.md
+    │       ├── LICENSE
+    │       └── README.md
+    ├── LICENSE
+    └── README.md
+</pre>
+]
+.column[
+<pre>
+    <span style="font-weight:bold;color:#3333FF;">tool_2</span>
+    ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+    │   ├── <span style="font-weight:bold;color:#3333FF;">lib_A</span>
+    │   │   ├── LICENSE
+    │   │   └── README.md
+    │   └── <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">lib_C</span>
+    │       ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+    │       │   └── <span style="font-weight:bold;color:#3333FF;">libFreeAssange</span>
+    │       │       ├── LICENSE
+    │       │       └── README.md
+    │       ├── LICENSE
+    │       └── README.md
+    ├── LICENSE
+    └── README.md
+</pre>
+
+]
+]
+
+---
+# Sidenote
+
+If you rename all your `master` branches and run 
+
+```bash
+git config --global init.defaultBranch `master-yoda`,
+```
+
+then `slave`ry will vanish and no longer be on this planet.
+
+
+<!-- git submodule update --remote --init --recursive
+```
+
+The difference between `git pull` and `git submodule update --remote` is explained in [this stackoverflow question](https://stackoverflow.com/questions/19619747/git-submodule-update-remote-vs-git-pull), which is repeated here:
+
+> `git pull` will only update your submodule branch, but it can be any branch that you could have checked out yourself in that submodule repo.
+>
+> `git submodule update --remote` will only update the branch registered in the `.gitmodule`, and by default, you will end up with a detached HEAD, unless --rebase or --merge is specified or the key submodule.$name.update is set to rebase, merge or none.
+>
+> In both cases, you still have to go back to the parent repo, add and commit the new submodule SHA1 reference.
+That is because in both instances, the SHA1 of the submodule changes, which means the gitlink (special entry in the index of the parent repo, named after to root folder of the submodule) must be added and committed. -->
 
 ---
 
@@ -149,6 +381,10 @@ class: center, middle
     </textarea>
 <script src="remark-latest.min.js">
 </script>
+<script type="text/javascript">
+    var hljs = remark.highlighter.engine;
+</script>
+<script src="terminal.language.js" type="text/javascript"></script>
 <script>
     var slideshow = remark.create({
         ratio: "16:9",
@@ -156,7 +392,16 @@ class: center, middle
         highlightStyle: "tomorrow",
         highlightSpans: true,
     });
+
+    // extract the embedded styling from ansi spans
+    var highlighted = document.querySelectorAll("code.terminal span.hljs-ansi");
+    Array.prototype.forEach.call(highlighted, function (next) {
+        next.insertAdjacentHTML("beforebegin", next.textContent);
+        next.parentNode.removeChild(next);
+    });
 </script>
+
+
 </body>
 
 </html>
