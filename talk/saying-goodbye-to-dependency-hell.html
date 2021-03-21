@@ -308,12 +308,136 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 ]
 
 ---
+
+# Entering Hell
+
+```bash
+$ echo "some additional text" \
+  >> 3rdParty/lib_B/3rdParty/libFreeAssange/README.md
+$ git status
+
+  On branch master-yoda
+  Your branch is up to date with 'origin/master-yoda'.
+  
+  Changes not staged for commit:
+    (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+    (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+    (commit or discard the untracked or modified content in submodules)
+          modified:   `3rdParty/lib_B (modified content)`
+  
+  no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+```
+---
+
+# Entering Hell 
+
+```bash
+[.../tool_1] $ git add 3rdParty/lib_B/3rdParty/libFreeAssange/README.md
+fatal: Pathspec '3rdParty/lib_B/3rdParty/libFreeAssange/README.md' 
+is in submodule '3rdParty/lib_B'
+```
+
+> This is a reasonable check. Happy to have it. It may be counter-intuitive though.
+
+---
+
+# Entering Hell 
+
+```bash
+$ cd 3rdParty/lib_B/3rdParty/libFreeAssange
+$ git add README.md 
+$ git commit -m "some change"
+$ git push
+```
+
+<pre>
+fatal: You are <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">not currently on a branch.</span>
+To push the history leading to the current (detached HEAD)
+state now, use
+
+    git push origin HEAD:<name-of-remote-branch>
+</pre>
+
+> 
+
+???
+
+- git is complicated enough to drive away inexperienced people
+- neither `git pull` will give you an indication whether we are up-to-date here
+
+---
+
+# Entering Hell 
+
+Let me get this clear: we **declared** `libFreeAssange` to **be** on branch `wikileaks`
+
+```bash
+$ cat ../../../lib_B/.gitmodules 
+[submodule "3rdParty/libFreeAssange"]
+        path = 3rdParty/libFreeAssange
+        url = https://github.com/dep-hell/libFreeAssange
+        `branch = wikileaks`
+```
+
+but it's not, so here we go doing something manually (the release of Boeing 737 MAX can't wait): 
+
+```bash
+[.../libFreeAssange] $ git reset --soft HEAD~1
+[.../libFreeAssange] $ git `checkout wikileaks` # <--- This!
+[.../libFreeAssange] $ git add README.md
+[.../libFreeAssange] $ git commit -m "some change"
+[.../libFreeAssange] $ git push
+```
+
+---
+
+# Being in Hell
+
+```bash 
+[.../libFreeAssange] $ cd ../..
+[.../lib_B] $ git status
+HEAD detached at ca0c74e
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        `modified:   3rdParty/libFreeAssange (new commits)`
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+> Practice **[Yoga with Adriene](https://www.youtube.com/user/yogawithadriene)**, 
+because we need a deep breath here. Let's go:
+
+---
+
+```bash 
+[.../`lib_B`] $ git add 3rdParty/libFreeAssange
+[.../lib_B] $ git comm... # WAIT! OH NO!
+[.../lib_B] $ git reset --soft HEAD~1
+[.../lib_B] $ git checkout master-yoda
+[.../lib_B] $ git pull
+[.../lib_B] $ git add 3rdParty/libFreeAssange
+[.../lib_B] $ git commit -m "update of libFreeAssange"
+[.../lib_B] $ git push
+[.../lib_B] $ cd ../..
+[.../`tool_1`] $ git checkout -b \
+  dummy-branch-for-a-change-that-changes-nothing 
+[.../tool_1] $ git push --set-upstream origin \
+  dummy-branch-for-a-change-that-changes-nothing 
+[.../tool_1] $ git add 3rdParty/lib_B 
+[.../tool_1] $ git commit -m "update of lib_B, due to ..." 
+[.../tool_1] $ git push 
+```
+
+> 11 commands to reflect a change in a library. See you in court, git submodule. 
+
+
 # Sidenote
 
 If you rename all your `master` branches and run 
 
 ```bash
-git config --global init.defaultBranch `master-yoda`,
+$ git config --global init.defaultBranch `master-yoda`,
 ```
 
 then `slave`ry will vanish and no longer be on this planet.
@@ -358,16 +482,17 @@ background-size: cover
 
 # CMake - Some Advice
 
-> - Never ever follow any advice that is older than 3 months. 
->   - Oh oh ... this advice won't age well.
-> - Don't try to use the internet to find out how CMake works 
-> - Maybe even don't try to find out how CMake works at all. 
->   - See what happened to [Isabella Muerte](https://twitter.com/slurpsmadrips) 
->   - Read her blog about *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
-> - Best Advice Ever: Read a ... book.
-> - Absolute Best Advice Ever: 
->   - Read Craig Scott's Seminal Book *Professional CMake: A Practical Guide*   
->   - Listen to Craig's talks on YouTibe 
+> Never ever follow any advice that is older than 3 months. This advice won't age well.
+
+- Don't try to use the internet to find out how CMake works 
+- Maybe even don't try to find out how CMake works at all. 
+  - See what happened to [Isabella Muerte](https://twitter.com/slurpsmadrips) 
+  - Read her blog about *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
+- Best Advice Ever: Read a ... book.
+- Absolute Best Advice Ever: 
+  - > Read Craig Scott's Seminal Book *Professional CMake: A Practical Guide*   
+- I wish this book had been written 2 years earlier  
+- Listen to Craig's talks on YouTube, e.g. https://www.youtube.com/watch?v=m0DwB4OvDXk  
 
 
 
