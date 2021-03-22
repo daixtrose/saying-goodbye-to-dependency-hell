@@ -309,6 +309,12 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 
 ---
 
+layout: false
+background-image: url(images/DSC_0010_2_DxO.jpg)
+background-size: cover
+
+---
+
 # Entering Hell
 
 ```bash
@@ -414,6 +420,10 @@ because we need a deep breath here. Let's go:
 [.../`lib_B`] $ git add 3rdParty/libFreeAssange
 [.../lib_B] $ git comm... # WAIT! OH NO!
 [.../lib_B] $ git reset --soft HEAD~1
+[.../lib_B] $ git checkout -b \
+  dummy-branch-for-a-change-that-changes-nothing
+[.../lib_B] $ git push --set-upstream origin \
+  dummy-branch-for-a-change-that-changes-nothing 
 [.../lib_B] $ git checkout master-yoda
 [.../lib_B] $ git pull
 [.../lib_B] $ git add 3rdParty/libFreeAssange
@@ -430,6 +440,9 @@ because we need a deep breath here. Let's go:
 ```
 
 > 11 commands to reflect a change in a library. See you in court, git submodule. 
+
+
+TODO: https://blog.mergify.io/managing-your-github-pull-request-from-the-command-line/
 
 
 # Sidenote
@@ -455,11 +468,6 @@ The difference between `git pull` and `git submodule update --remote` is explain
 > In both cases, you still have to go back to the parent repo, add and commit the new submodule SHA1 reference.
 That is because in both instances, the SHA1 of the submodule changes, which means the gitlink (special entry in the index of the parent repo, named after to root folder of the submodule) must be added and committed. -->
 
----
-
-layout: false
-background-image: url(images/DSC_0010_2_DxO.jpg)
-background-size: cover
 
 ---
 
