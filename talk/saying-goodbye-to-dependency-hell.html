@@ -318,9 +318,9 @@ background-size: cover
 # Entering Hell
 
 ```bash
-$ echo "some additional text" \
+[.../tool_1] $ echo "some additional text" \
   >> 3rdParty/lib_B/3rdParty/libFreeAssange/README.md
-$ git status
+[.../tool_1] $ git status
 
   On branch master-yoda
   Your branch is up to date with 'origin/master-yoda'.
@@ -420,18 +420,14 @@ because we need a deep breath here. Let's go:
 [.../`lib_B`] $ git add 3rdParty/libFreeAssange
 [.../lib_B] $ git comm... # WAIT! OH NO!
 [.../lib_B] $ git reset --soft HEAD~1
-[.../lib_B] $ git checkout -b \
-  dummy-branch-for-a-change-that-changes-nothing
-[.../lib_B] $ git push --set-upstream origin \
-  dummy-branch-for-a-change-that-changes-nothing 
-[.../lib_B] $ git checkout master-yoda
+[.../lib_B] $ git checkout `master-yoda # shall we use this branch ...`
 [.../lib_B] $ git pull
 [.../lib_B] $ git add 3rdParty/libFreeAssange
 [.../lib_B] $ git commit -m "update of libFreeAssange"
 [.../lib_B] $ git push
 [.../lib_B] $ cd ../..
-[.../`tool_1`] $ git checkout -b \
-  dummy-branch-for-a-change-that-changes-nothing 
+[.../`tool_1`] $ git checkout -b \ # .. or `shall we use another branch?`
+  `dummy-branch-for-a-change-that-changes-nothing` 
 [.../tool_1] $ git push --set-upstream origin \
   dummy-branch-for-a-change-that-changes-nothing 
 [.../tool_1] $ git add 3rdParty/lib_B 
@@ -439,41 +435,37 @@ because we need a deep breath here. Let's go:
 [.../tool_1] $ git push 
 ```
 
-> 11 commands to reflect a change in a library. See you in court, git submodule. 
-
-
-TODO: https://blog.mergify.io/managing-your-github-pull-request-from-the-command-line/
-
-
-# Sidenote
-
-If you rename all your `master` branches and run 
-
-```bash
-$ git config --global init.defaultBranch `master-yoda`,
-```
-
-then `slave`ry will vanish and no longer be on this planet.
-
-
-<!-- git submodule update --remote --init --recursive
-```
-
-The difference between `git pull` and `git submodule update --remote` is explained in [this stackoverflow question](https://stackoverflow.com/questions/19619747/git-submodule-update-remote-vs-git-pull), which is repeated here:
-
-> `git pull` will only update your submodule branch, but it can be any branch that you could have checked out yourself in that submodule repo.
->
-> `git submodule update --remote` will only update the branch registered in the `.gitmodule`, and by default, you will end up with a detached HEAD, unless --rebase or --merge is specified or the key submodule.$name.update is set to rebase, merge or none.
->
-> In both cases, you still have to go back to the parent repo, add and commit the new submodule SHA1 reference.
-That is because in both instances, the SHA1 of the submodule changes, which means the gitlink (special entry in the index of the parent repo, named after to root folder of the submodule) must be added and committed. -->
-
+> 10 commands to reflect a change in a library. Scales with O(n) with the # of nesting levels.  
 
 ---
 
 layout: false
 background-image: url(images/DSC_0198_DxO.jpg)
 background-size: cover
+
+.split-50[
+.column[
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+- Submodules are bound to commits<br>rather than branches.
+- In a deeply nested structure<br>the updates bubble up the tree. 
+- Changes are not local, but they should.
+- Does this encourage distribution of code into multiple repositories? 
+]
+.column[
+]
+]
+
+???
+
+- I don't know the reason for the design decision for having submodules stick to commits rather than branches
+- We need a directory structure that allows code editing across multiple repositories, because a code change might affect several of them.
+- Seen a trend that people put everything in one repo, since tools do not support modularity
+- I think something is wrong with this.
 
 
 ---
@@ -502,7 +494,57 @@ background-size: cover
 - I wish this book had been written 2 years earlier  
 - Listen to Craig's talks on YouTube, e.g. https://www.youtube.com/watch?v=m0DwB4OvDXk  
 
+---
 
+# How to Deal with Dependencies in CMake 
+
+```cmake
+# See https://cmake.org/cmake/help/latest/module/FetchContent.html
+include(`FetchContent`) 
+```
+
+- `ExternalProject_Add()` is used at build time, but `FetchContent` performs during the configuration step.
+- Assuming you use dependencies that have `CMake` configured correctly, such that ` add_subdirectory()` works.
+
+
+---
+
+# The 2-Step Approach of FetchContent
+
+```cmake
+FetchContent_`Declare`( # 1st step
+  libFreeAssange
+  GIT_REPOSITORY https://github.com/dep-hell/libFreeAssange
+  GIT_TAG        belmarsh
+)
+```
+
+```cmake
+FetchContent_`MakeAvailable`(libFreeAssange) # 2nd step 
+```
+
+The second step is equivalent to
+
+```cmake
+FetchContent_GetProperties(libFreeAssange)
+if(NOT libFreeAssange_POPULATED)
+  FetchContent_Populate(libFreeAssange)
+  add_subdirectory(${libFreeAssange_SOURCE_DIR} 
+                   ${libFreeAssange_BINARY_DIR})
+endif()
+```
+
+---
+
+# Sidenote
+
+If you rename all your `master` branches and run 
+
+```bash
+$ git config --global init.defaultBranch `master-yoda`,
+```
+
+then `slave`ry will vanish and no longer be on this planet.
 
 ---
 
