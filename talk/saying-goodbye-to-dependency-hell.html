@@ -440,6 +440,14 @@ because we need a deep breath here. Let's go:
 ---
 
 layout: false
+background-image: url(images/2019-03-15_IMG_4376.JPG)
+background-size: cover
+
+
+---
+
+
+layout: false
 background-image: url(images/DSC_0198_DxO.jpg)
 background-size: cover
 
@@ -454,6 +462,7 @@ background-size: cover
 - Submodules are bound to commits<br>rather than branches.
 - In a deeply nested structure<br>the updates bubble up the tree. 
 - Changes are not local, but they should.
+> Git add and commit for changes of the *database*, not changes of any files<br>under version control
 - Does this encourage distribution of code into multiple repositories? 
 ]
 .column[
@@ -488,9 +497,8 @@ background-size: cover
 - Maybe even don't try to find out how CMake works at all. 
   - See what happened to [Isabella Muerte](https://twitter.com/slurpsmadrips) 
   - Read her blog about *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
-- Best Advice Ever: Read a ... book.
-- Absolute Best Advice Ever: 
-  - > Read Craig Scott's Seminal Book *Professional CMake: A Practical Guide*   
+- Read a ... book?
+  - > Craig Scott: *Professional CMake: A Practical Guide*   
 - I wish this book had been written 2 years earlier  
 - Listen to Craig's talks on YouTube, e.g. https://www.youtube.com/watch?v=m0DwB4OvDXk  
 
@@ -503,8 +511,8 @@ background-size: cover
 include(`FetchContent`) 
 ```
 
-- `ExternalProject_Add()` is used at build time, but `FetchContent` performs during the configuration step.
-- Assuming you use dependencies that have `CMake` configured correctly, such that ` add_subdirectory()` works.
+- While `ExternalProject_Add()` executes **at build time**, `FetchContent` performs earlier **during the configuration step**.
+- If you fetch dependencies that have `CMake` configured correctly, `add_subdirectory()` works fine.
 
 
 ---
@@ -523,7 +531,15 @@ FetchContent_`Declare`( # 1st step
 FetchContent_`MakeAvailable`(libFreeAssange) # 2nd step 
 ```
 
-The second step is equivalent to
+---
+
+# The 2-Step Approach of FetchContent
+
+```cmake
+FetchContent_`MakeAvailable`(libFreeAssange) # 2nd step 
+```
+
+is equivalent to
 
 ```cmake
 FetchContent_GetProperties(libFreeAssange)
@@ -533,6 +549,72 @@ if(NOT libFreeAssange_POPULATED)
                    ${libFreeAssange_BINARY_DIR})
 endif()
 ```
+
+---
+
+# The 2-Step Approach of FetchContent
+
+```cmake
+FetchContent_`MakeAvailable`(libFreeAssange) # 2nd step 
+```
+
+is equivalent to
+
+```cmake
+FetchContent_GetProperties(libFreeAssange)
+if(NOT libFreeAssange_POPULATED)
+  FetchContent_Populate(libFreeAssange)
+  add_subdirectory(${libFreeAssange_SOURCE_DIR} 
+                   ${libFreeAssange_BINARY_DIR})
+  # `Add your own stuff here if the library you include` 
+  # `is not properly configured` 
+endif()
+```
+
+---
+
+# Calling `setup.sh` when changes are available
+
+<pre>
+[.../tool_1] $ ./setup.sh
+<span style="color:blue;">Checking ws/lib_A</span>
+<span style="color:blue;">Checking ws/lib_B</span>
+<span style="color:blue;">Checking ws/libFreeAssange</span>
+<span style="color:red;"> Your branch is behind 'origin/belmarsh' by 1 commit, and can be fast-forwarded. </span>
+<span style="color:blue;">Checking ws/catch2</span>
+<span style="color:blue;">Checking ws/fmt</span>
+<span style="color:blue;">Checking /home/markus/PROJECT/dep-heaven/tool_1</span>
+
+<span style="color:red;">!!!! ===&gt; There are uncommited changes &lt;=== !!!!</span>
+On branch master-yoda
+Your branch is up to date with 'origin/master-yoda'.
+
+Changes not staged for commit:
+  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+        modified:   <span style="background-color:yellow;">dependencies.txt</span>
+
+no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+</pre>
+
+---
+
+# Calling `setup.sh` when changes are available
+
+<pre>
+  <span style="font-weight:bold;">diff --git a/dependencies.txt b/dependencies.txt</span>
+  <span style="font-weight:bold;">index ef27091..4d3fab6 100644</span>
+  <span style="font-weight:bold;">--- a/dependencies.txt</span>
+  <span style="font-weight:bold;">+++ b/dependencies.txt</span>
+  <span style="color:teal;">@@ -4,6 +4,7 @@</span>
+   # Internal dependencies
+   lib_A https://github.com/dep-heaven/lib_A master-yoda
+   lib_B https://github.com/dep-heaven/lib_B master-yoda
+  <span style="color:green;">+</span><span style="color:green;">libFreeAssange https://github.com/dep-heaven/libFreeAssange belmarsh</span>
+   
+   # External dependencies
+   catch2 https://github.com/catchorg/Catch2 v2.x
+</pre>
 
 ---
 
@@ -546,38 +628,10 @@ $ git config --global init.defaultBranch `master-yoda`,
 
 then `slave`ry will vanish and no longer be on this planet.
 
----
 
-class: middle
 
-.center[
+</textarea>
 
-# Where do we come from? 
-
-.accent[
-### Looking Back Over My Shoulder
-]
-]
-        
-        
-
-class: center, middle
-
-# Title
-
----
-
-# Agenda
-
-1. Introduction
-2. Deep-dive
-3. ...
-
----
-
-# Introduction
-
-    </textarea>
 <script src="remark-latest.min.js">
 </script>
 <script type="text/javascript">
