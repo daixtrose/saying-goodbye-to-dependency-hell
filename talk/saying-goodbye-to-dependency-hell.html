@@ -46,6 +46,7 @@ layout: false
 .column[
 &nbsp;<br>
 - You can download this talk **and** code samples at https://github.com/daixtrose/saying-goodbye-to-dep-hell
+- The solution I present is available at https://github.com/daixtrose/cmake_utilities 
 - Code published under MIT licence
     - The code for the talk framework is based on [remark.js](https://github.com/gnab/remark) and is stolen from [Kirk Shoop's Intro to RxCpp](https://github.com/kirkshoop/introductionToRxcpp) 
     - Please contribute fixes or [file an issue](https://github.com/daixtrose/saying-goodbye-to-dep-hell/issues) if you find errors or know about improvements. 
@@ -570,6 +571,49 @@ if(NOT libFreeAssange_POPULATED)
   # `is not properly configured` 
 endif()
 ```
+
+---
+
+# Key features of FetchContent
+
+## Fetching content from Git repositories
+
+<pre>
+FetchContent_Declare(
+    cmake_utilities
+    GIT_REPOSITORY https://github.com/daixtrose/cmake_utilities
+    GIT_TAG        main)
+</pre>
+
+## Fetching content from URLs
+
+<pre>
+FetchContent_Declare(
+    myCompanyIcons
+    URL      https://intranet.mycompany.com/assets/iconset_1.12.tar.gz
+    URL_HASH 5588a7b18261c20068beabfb4f530b87)
+</pre>
+
+---
+
+# Key features of FetchContent
+
+## Fetching content from a **source directory** (!)  
+
+<pre>
+FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
+</pre>    
+
+---
+
+# Key features of FetchContent
+
+- The first call to `FetchContent_Declare` wins. 
+  > You can **overwrite settings** in libraries you include!
+  > - change branch
+  > - change source location
+  > - etc.
+
 
 ---
 
