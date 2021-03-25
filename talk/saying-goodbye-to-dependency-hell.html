@@ -454,12 +454,6 @@ because we need a deep breath here. Let's go:
 
 > 10 commands to reflect a change in a library. Scales with O(n) with the # of nesting levels.  
 
----
-
-layout: false
-background-image: url(images/2019-03-15_IMG_4376.JPG)
-background-size: cover
-
 
 ---
 
@@ -493,6 +487,12 @@ background-size: cover
 - Seen a trend that people put everything in one repo, since tools do not support modularity
 - I think something is wrong with this.
 
+---
+
+layout: false
+background-image: url(images/2019-03-15_IMG_4376.JPG)
+background-size: cover
+
 
 ---
 
@@ -512,9 +512,9 @@ background-size: cover
 
 - Don't try to use the internet to find out how CMake works 
 - Maybe even don't try to find out how CMake works at all. 
-  - See what happened to [Isabella Muerte](https://twitter.com/slurpsmadrips) 
-  - Read her blog about *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
-- Read a ... book?
+  - Read [Isabella Muerte](https://twitter.com/slurpsmadrips)'s blog about<br> 
+  *[Everything You Never Wanted to Know About CMake](https://izzys.casa/2019/02/everything-you-never-wanted-to-know-about-cmake/)*
+- Read a ... book? I have a proposal:
   - > Craig Scott: *Professional CMake: A Practical Guide*   
 - I wish this book had been written 2 years earlier  
 - Listen to Craig's talks on YouTube, e.g. https://www.youtube.com/watch?v=m0DwB4OvDXk  
@@ -597,16 +597,20 @@ endif()
 ```cmake
 FetchContent_Declare(
     cmake_utilities
-    GIT_REPOSITORY https://github.com/daixtrose/cmake_utilities
+    `GIT_REPOSITORY` https://github.com/daixtrose/cmake_utilities
     GIT_TAG        main)
 ```
+
+---
+
+# Key features of FetchContent
 
 ## Fetching content from URLs
 
 ```cmake
 FetchContent_Declare(
     myCompanyIcons
-    URL      https://intranet.mycompany.com/assets/iconset_1.12.tar.gz
+    `URL`      https://intranet.mycompany.com/assets/iconset_1.12.tar.gz
     URL_HASH 5588a7b18261c20068beabfb4f530b87)
 ```
 
@@ -617,24 +621,29 @@ FetchContent_Declare(
 ## Fetching content from a **source directory** (!)  
 
 ```cmake
-FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
+FetchContent_Declare(
+    some_name 
+    `SOURCE_DIR` /path/to/directory)
 ```  
+
+> I leverage this feature for my proposal
 
 ---
 
 # Key features of FetchContent
 
-- The first call to `FetchContent_Declare` wins. 
-  > You can **overwrite settings** in libraries you include!
+- The <span style="background-color:yellow;">first</span> call to `FetchContent_Declare` wins. 
+  > You can **overwrite dependency settings** in libraries you include!
+  > - This obviously only works if the libraries you include uses FetchContent
   > - change branch
   > - change source location
-  > - etc.
+  > - even redirect to a completely different library
 
 ---
 
 # My Proposal in a Nutshell  
 
-> Content of `dependencies.txt`
+> Create a file named `dependencies.txt` in the top level of your tool repository:
 
 ```bash
 # Please add dependencies as 
@@ -777,7 +786,7 @@ tool_1
   mkdir ws
   touch ws/.gitkeep # because git will not put empty directories under VC 
   ```
-- Add this directory to `.gitignore`
+- Add this directory to `.gitignore`, so nothing inside it can confuse git  
 - Clone all dependencies into `ws` <span style="background-color:yellow;">*without* any recursion</span> 
 - Ensure <span style="background-color:yellow;">`CMake`</span> will fetch (**sic!**) from `ws` **and** <span style="background-color:yellow;">will track code changes in `ws`</span> 
 
@@ -797,7 +806,7 @@ tool_1
   │   └── tool_1
   ├── src
   ├── test-catch
-  └── ws `<-- This directory is in .gitignore & so is everything below it`
+  └── ws `# This directory is in .gitignore & so is everything below it`
       ├── catch2
       ├── fmt
       ├── libFreeAssange # This is a dependency of lib_B, no recursion
@@ -805,23 +814,61 @@ tool_1
       └── lib_B
 ```
 
+---
+
+# The resulting directory structure
+
+```bash
+tool_1
+├── build
+[...]
+│   ├── _deps
+# Something is missing here: catch2-src was not put here!
+│   │   ├── catch2-build
+│   │   ├── catch2-subbuild
+[...]
+# Something is missing here: fmt-src was not put here!
+│   │   ├── fmt-build 
+│   │   ├── fmt-subbuild
+# Due to `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`
+│   │   ├── lib_a-build
+│   │   ├── lib_a-subbuild
+[...]
+├── include
+│   └── tool_1
+├── src
+├── test-catch
+└── ws
+    ├── catch2
+    ├── fmt
+    ├── libFreeAssange
+    ├── lib_A
+    └── lib_B
+```
 
 ---
 
 # The resulting directory structure
 
-```
-tool_1
-  ├── include
-  │   └── tool_1
-  ├── src
-  ├── test-catch
-  └── ws `<-- This directory is in .gitignore !`
-      ├── catch2
-      ├── fmt
-      ├── libFreeAssange
-      ├── lib_A
-      └── lib_B
+```bash
+[...]
+# Something is missing here: fmt-src was not put here!
+│   │   ├── `fmt`-build 
+│   │   ├── `fmt`-subbuild
+# Due to `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`
+│   │   ├── lib_a-build
+│   │   ├── lib_a-subbuild
+[...]
+├── include
+│   └── tool_1
+├── src
+├── test-catch
+└── ws
+    ├── catch2 
+    ├── `fmt` # Here's the code
+    ├── libFreeAssange
+    ├── lib_A
+    └── lib_B
 ```
 
 ---
