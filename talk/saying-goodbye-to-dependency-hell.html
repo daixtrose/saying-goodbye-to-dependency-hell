@@ -35,17 +35,28 @@ Duration: 1:05:42 (#NoEstimates)
 
 ]
 
+---
+
+layout: false
+background-image: url(https://ducktrain.io/wp-content/uploads/2020/07/Ducktrain_BicycleLane2.png)
+background-size: cover
+
+# .fixed-pos-nearly-llc[Visit [https://ducktrain.io](https://ducktrain.io)]
+
+.center[<span><img src=></span>]
 
 ---
 
 layout: false
 
-# This talk and its accompanying code is Open Source&#8482;	
+## This talk and its accompanying code is Open Source&#8482;	
+
+You can download this talk **and** code samples at<br>
+https://github.com/daixtrose/saying-goodbye-to-dep-hell
 
 .split-50[
 .column[
 &nbsp;<br>
-- You can download this talk **and** code samples at https://github.com/daixtrose/saying-goodbye-to-dep-hell
 - The solution I present is available at https://github.com/daixtrose/cmake_utilities 
 - Code published under MIT licence
     - The code for the talk framework is based on [remark.js](https://github.com/gnab/remark) and is stolen from [Kirk Shoop's Intro to RxCpp](https://github.com/kirkshoop/introductionToRxcpp) 
@@ -121,6 +132,11 @@ Also there is an indirect dependency to
 ]
 
 
+---
+
+layout: false
+
+# Dependency Hell with `Git Submodules` 
 
 
 ---
@@ -216,7 +232,7 @@ layout: false
 
 # Dependency Hell with Git Submodules - Recursive Dependencies
 
-> `lib_A` **and** `lib_B` **both** depend on `https://github.com/dep-hell/libFreeAssange`  
+> `lib_B` **and** `lib_C` **both** depend on `https://github.com/dep-hell/libFreeAssange`  
 ```
 In order to understand recursion, you must first understand recursion.
 ```
@@ -642,18 +658,153 @@ fmt https://github.com/fmtlib/fmt master
 
 ```cmake
 include(FetchContent)
-
 FetchContent_Declare(
   cmake_utilities
-  GIT_REPOSITORY https://github.com/daixtrose/cmake_utilities
+  GIT_REPOSITORY `https://github.com/daixtrose/cmake_utilities`
   GIT_TAG        main
 )
 FetchContent_MakeAvailable(cmake_utilities)
 
 fetchcontent_dependencies( # <-- THIS
-    FILENAME dependencies.txt 
+    FILENAME `dependencies.txt` 
     WORKSPACE ws)
 ```
+
+---
+
+# Tool 1 - Directory Structure
+
+```
+tool_1
+  ├── include
+  │   └── tool_1
+  ├── src
+  └── test-catch
+```
+
+---
+
+# Tool 1 - Directory Structure
+
+```
+tool_1
+  ├── include
+  │   └── tool_1
+  ├── src
+  └── test-catch
+```
+
+Now let's cmake it:
+
+```bash
+[.../tool_1] $ mkdir build
+[.../tool_1] $ cd build
+[.../build] $ cmake ..
+```
+
+---
+
+# Tool 1 - Build Directory Structure
+
+```bash
+tool_1
+├── `build`
+...
+│   ├── `_deps` `# This is where FetchContent puts all its stuff`
+│   │   ├── catch2-build
+│   │   ├── catch2-src
+│   │   ├── catch2-subbuild
+│   │   ├── cmake_utilities-build
+│   │   ├── cmake_utilities-src
+│   │   ├── cmake_utilities-subbuild
+│   │   ├── fmt-build
+│   │   ├── fmt-src
+│   │   ├── fmt-subbuild
+│   │   ├── lib_a-build
+│   │   ├── lib_a-src
+│   │   ├── lib_a-subbuild
+│   │   ├── lib_b-build
+│   │   ├── lib_b-src
+│   │   ├── lib_b-subbuild
+│   │   ├── libfreeassange-build
+│   │   ├── libfreeassange-src
+│   │   └── libfreeassange-subbuild
+│   └── test-catch
+│       └── CMakeFiles
+├── include
+│   └── tool_1
+├── src
+└── test-catch
+```
+
+
+
+---
+
+# Tool 1 - Build Directory Structure
+
+```bash
+tool_1
+├── `build`
+...
+│   ├── `_deps` # This is where FetchContent puts all its stuff
+│   │   ├── catch2-*
+│   │   ├── `cmake_utilities*`
+│   │   ├── fmt-*
+│   │   ├── lib_a*
+│   │   ├── lib_b*
+│   │   ├── libfreeassange*
+│   └── test-catch
+│       └── CMakeFiles
+├── include
+│   └── tool_1
+├── src
+└── test-catch
+```
+
+---
+
+# How to debug and edit the code? 
+
+- Changing the code in `build` is not the way to go, so what then?
+- We have to clone all dependencies to a .accent[certain place on our disk] and edit it there. 
+  - Ideally any change in that code is transferred to the `build` directory    
+
+# My Proposal
+
+- Create a directory, e.g. `ws`
+  ```bash
+  mkdir ws
+  touch ws/.gitkeep # because git will not put empty directories under VC 
+  ```
+- Add this directory to `.gitignore`
+- Clone all dependencies into `ws` <span style="background-color:yellow;">*without* any recursion</span> 
+- Ensure <span style="background-color:yellow;">`CMake`</span> will fetch (**sic!**) from `ws` **and** <span style="background-color:yellow;">will track code changes in `ws`</span> 
+
+---
+
+# Cloning all dependencies 
+
+```bash
+./setup.sh # There it is, the shell script that reads `dependencies.txt`  
+```
+
+Resulting directory structure:
+
+```bash
+tool_1
+  ├── include
+  │   └── tool_1
+  ├── src
+  ├── test-catch
+  └── ws `<-- This directory is in .gitignore & so is everything below it`
+      ├── catch2
+      ├── fmt
+      ├── libFreeAssange # This is a dependency of lib_B, no recursion
+      ├── lib_A
+      └── lib_B
+```
+
 
 ---
 
