@@ -546,7 +546,7 @@ is equivalent to
 FetchContent_GetProperties(libFreeAssange)
 if(NOT libFreeAssange_POPULATED)
   FetchContent_Populate(libFreeAssange)
-  add_subdirectory(${libFreeAssange_SOURCE_DIR} 
+  `add_subdirectory`(${libFreeAssange_SOURCE_DIR} 
                    ${libFreeAssange_BINARY_DIR})
 endif()
 ```
@@ -578,21 +578,21 @@ endif()
 
 ## Fetching content from Git repositories
 
-<pre>
+```cmake
 FetchContent_Declare(
     cmake_utilities
     GIT_REPOSITORY https://github.com/daixtrose/cmake_utilities
     GIT_TAG        main)
-</pre>
+```
 
 ## Fetching content from URLs
 
-<pre>
+```cmake
 FetchContent_Declare(
     myCompanyIcons
     URL      https://intranet.mycompany.com/assets/iconset_1.12.tar.gz
     URL_HASH 5588a7b18261c20068beabfb4f530b87)
-</pre>
+```
 
 ---
 
@@ -600,9 +600,9 @@ FetchContent_Declare(
 
 ## Fetching content from a **source directory** (!)  
 
-<pre>
+```cmake
 FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
-</pre>    
+```  
 
 ---
 
@@ -614,6 +614,64 @@ FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
   > - change source location
   > - etc.
 
+---
+
+# My Proposal in a Nutshell  
+
+> Content of `dependencies.txt`
+
+```bash
+# Please add dependencies as 
+# <LOWERCASE_NAME> <URL> <GIT TAG>  
+
+# Internal dependencies
+lib_A https://github.com/dep-heaven/lib_A master-yoda
+lib_B https://github.com/dep-heaven/lib_B master-yoda
+libFreeAssange https://github.com/dep-heaven/libFreeAssange belmarsh
+
+# External dependencies
+catch2 https://github.com/catchorg/Catch2 v2.x
+fmt https://github.com/fmtlib/fmt master
+```
+
+---
+
+# My Proposal in a Nutshell
+
+> Content of `CMakeLists.txt`
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+  cmake_utilities
+  GIT_REPOSITORY https://github.com/daixtrose/cmake_utilities
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(cmake_utilities)
+
+fetchcontent_dependencies( # <-- THIS
+    FILENAME dependencies.txt 
+    WORKSPACE ws)
+```
+
+---
+
+# The resulting directory structure
+
+```
+tool_1
+  ├── include
+  │   └── tool_1
+  ├── src
+  ├── test-catch
+  └── ws `<-- This directory is in .gitignore !`
+      ├── catch2
+      ├── fmt
+      ├── libFreeAssange
+      ├── lib_A
+      └── lib_B
+```
 
 ---
 
