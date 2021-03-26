@@ -134,9 +134,18 @@ Also there is an indirect dependency to
 
 ---
 
-layout: false
+# Dependency Hell with Git Submodules 
 
-# Dependency Hell with `Git Submodules` 
+> Now we need strong machinery
+
+.split-50[
+.column[
+![](images/DSC_0253_DxO.jpg)
+]
+.column[
+![](images/DSC_0264_DxO.jpg)
+]
+]
 
 
 ---
@@ -160,8 +169,6 @@ $ git `submodule add` -b master-yoda \
 ```
 
 ---
-
-layout: false
 
 # Dependency Hell with Git Submodules - Tool 1 
 
@@ -230,12 +237,9 @@ $ git push # I commited to master-yoda here!
 
 layout: false
 
-# Dependency Hell with Git Submodules - Recursive Dependencies
+# Dependency Hell with Git Submodules - Nested Dependencies
 
 > `lib_B` **and** `lib_C` **both** depend on `https://github.com/dep-hell/libFreeAssange`  
-```
-In order to understand recursion, you must first understand recursion.
-```
 
 ```bash
 git clone https://github.com/dep-hell/`lib_B`
@@ -347,7 +351,7 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 .column[
 - A clone of https://github.com/ReactiveX/RxCpp takes 66 MB of disc space
 - We had a system where approx. 20 different repos had `RxCpp`as a dependency
-- A modules update run took one hour in the workshop       
+- A modules update run took one hour in the workshop, because git cloned the very same repository approx. 20 times        
 </pre>
 > This is a QOI issue and could be mitigated. 
 ]
@@ -551,6 +555,15 @@ background-size: cover
 
 ---
 
+layout: false
+background-image: url(images/2019-05-14_IMG_5067.JPG)
+background-size: cover
+
+
+# .white[How to Deal with Dependencies in CMake] 
+
+---
+
 # How to Deal with Dependencies in CMake 
 
 ```cmake
@@ -656,7 +669,7 @@ FetchContent_Declare(
     `SOURCE_DIR` /path/to/directory)
 ```  
 
-> I leverage this feature for my proposal
+> I leverage this feature for my proposal. There is a little surprise here. Stay tuned.
 
 ---
 
@@ -846,22 +859,21 @@ tool_1
 
 ---
 
-# The resulting directory structure
+# The final directory structure
+
+`$ mkdir build && cd build && cmake ..`
 
 ```bash
 tool_1
 ├── build
 [...]
 │   ├── _deps
-# Something is missing here: catch2-src was not put here!
-│   │   ├── catch2-build
+│   │   ├── catch2-build # catch2-src was not put here!
 │   │   ├── catch2-subbuild
 [...]
-# Something is missing here: fmt-src was not put here!
-│   │   ├── fmt-build 
+│   │   ├── fmt-build # fmt-src was not put here! 
 │   │   ├── fmt-subbuild
-# Due to `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`
-│   │   ├── lib_a-build
+│   │   ├── lib_a-build # Dito
 │   │   ├── lib_a-subbuild
 [...]
 ├── include
@@ -880,12 +892,12 @@ tool_1
 
 # The resulting directory structure
 
+Due to `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`
+
 ```bash
 [...]
-# Something is missing here: fmt-src was not put here!
-│   │   ├── `fmt`-build 
+│   │   ├── `fmt`-build # fmt-src was not put here! 
 │   │   ├── `fmt`-subbuild
-# Due to FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
 │   │   ├── lib_a-build
 │   │   ├── lib_a-subbuild
 [...]
@@ -903,17 +915,140 @@ tool_1
 
 ---
 
+layout: false
+background-image: url(images/Lauch.jpg)
+background-size: cover
+
+
 # Findings
 
-- `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`<br>
-does **not** fetch the content, but **refers** to it directly
-- This means that the debugger will point to the code below `ws`
-- AFAICS this is the most efficient usage of hard disk space, 
-  since the code for every dependency is stored on disk exactly once    
+> - `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`<br>
+does **not** fetch the content, but **refers** to it directly<br><br>
+
+> - This means that the debugger will point to the code below `ws`
+
+> - AFAICS this is the most efficient usage of hard disk space, 
+  since the code for every dependency is stored on disk exactly once.    
+
+> - CMake works **with and without** any clones in `ws`. 
+> - The `CMakeLists.txt` and `setup.sh` are completely orthogonal, but share common information.      
 
 ---
 
-# Calling `setup.sh` when changes are available
+# Let's Take a Look at the Code
+
+```cmake
+macro(fetchcontent_dependencies)
+    set(options "")
+    set(oneValueArgs FILENAME WORKSPACE)
+    set(multiValueArgs "")
+    cmake_parse_arguments(FETCHCONTENT_DEPENDENCIES 
+        "${options}" "${oneValueArgs}"
+        "${multiValueArgs}" ${ARGN})
+    
+    # Read a list of required git repositories from a file
+    file(STRINGS ${FETCHCONTENT_DEPENDENCIES_FILENAME} DEPENDENCIES)
+    # Add those dependencies via FetchContent
+    # STEP 1: declare all dependencies
+    foreach(dependency ${DEPENDENCIES})
+        # ... see next slide
+```
+---
+
+```cmake
+# STEP 1: declare all dependencies
+foreach(dependency ${DEPENDENCIES})
+    # ... hacky hacky string parsing ommitted here ...
+
+    # If the dependency was formerly cloned to the workspace (aka directory exists), 
+    # use it, otherwise declare as to be fetched from URL
+    set (LOCAL_SOURCE 
+        ${PROJECT_SOURCE_DIR}/${FETCHCONTENT_DEPENDENCIES_WORKSPACE}/${name})
+
+    if (EXISTS ${LOCAL_SOURCE})
+        # Note that cmake does not copy this, but refers to the clone 
+        # and thereby detects any changes made at ${LOCAL_SOURCE} 
+
+        # Check git version
+        if (EXISTS ${LOCAL_SOURCE}/.git)            
+            execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD 
+                WORKING_DIRECTORY ${LOCAL_SOURCE}
+                OUTPUT_VARIABLE git_tag_detected
+                RESULT_VARIABLE GIT_COMMAND_RESULT 
+                # COMMAND_ECHO STDOUT
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+            if(NOT GIT_COMMAND_RESULT EQUAL "0")
+                set(git_tag_detected "!!! CHECKING OF VERSION FAILED !!!")
+            endif()
+        else()
+            set(git_tag_detected "!!! NOT UNDER VERSION CONTROL !!!")
+        endif()
+
+        message("Adding '${name}' from '${PROJECT_SOURCE_DIR}/ws/${name}' with git tag '${git_tag_detected}'")      
+        
+        FetchContent_Declare(${name} 
+            SOURCE_DIR ${PROJECT_SOURCE_DIR}/ws/${name})
+    else()
+        message("Adding '${name}' from '${repository}' with git tag '${git_tag}'")  
+        FetchContent_Declare(${name} 
+            GIT_REPOSITORY ${repository}
+            GIT_TAG ${git_tag}
+        )
+    endif()
+endforeach()
+
+    # STEP 2: populate
+    foreach(dependency ${DEPENDENCIES})
+        # Strip leading spaces
+        string(REGEX REPLACE "^[ ]+" "" dependency ${dependency})
+        
+        # skip empty lines
+        if ("${dependency}" STREQUAL "")
+            continue()
+        endif()
+
+        # skip comment lines
+        if ("${dependency}" MATCHES "^#")
+            continue()
+        endif()
+
+        # transform into list
+        separate_arguments(deps_as_list UNIX_COMMAND ${dependency})
+        
+        # Extract space-separated values 
+        list(GET deps_as_list 0 name)
+
+        FetchContent_GetProperties(${name})
+        
+        string(TOLOWER ${name} lowercase_name)
+        
+        if(NOT ${lowercase_name}_POPULATED)
+            message("==> Populating '${name}' ...")     
+            FetchContent_Populate(${name})
+            message("==> Adding subdirectory ${${name}_SOURCE_DIR}")
+            add_subdirectory(${${lowercase_name}_SOURCE_DIR} ${${lowercase_name}_BINARY_DIR} ${additional_args})
+        endif()
+
+        # HACK: we **know** we need extra work for Catch2 population 
+        # We could generalize this approach and check for *.cmake files in order to add 
+        # the directories they reside in CMAKE_MODULE_PATH. This itself could yield 
+        # some problems, so this must be carefully designed
+        if ("${lowercase_name}" STREQUAL "catch2")
+            message("==> Appending ${catch2_SOURCE_DIR}/contrib to CMAKE_MODULE_PATH")
+            list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/contrib")
+            message("CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+            include(Catch)
+        endif()
+    endforeach()
+endmacro()
+```
+
+---
+
+# This Shell Script Has Potential 
+
+Calling setup.sh to check and update all git repositories
 
 <pre>
 [.../tool_1] $ ./setup.sh
@@ -924,7 +1059,6 @@ does **not** fetch the content, but **refers** to it directly
 <span style="color:blue;">Checking ws/catch2</span>
 <span style="color:blue;">Checking ws/fmt</span>
 <span style="color:blue;">Checking /home/markus/PROJECT/dep-heaven/tool_1</span>
-
 <span style="color:red;">!!!! ===&gt; There are uncommited changes &lt;=== !!!!</span>
 On branch master-yoda
 Your branch is up to date with 'origin/master-yoda'.
@@ -939,7 +1073,9 @@ no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&q
 
 ---
 
-# Calling `setup.sh` when changes are available
+# Test
+
+
 
 <pre>
   <span style="font-weight:bold;">diff --git a/dependencies.txt b/dependencies.txt</span>
@@ -956,17 +1092,6 @@ no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&q
    catch2 https://github.com/catchorg/Catch2 v2.x
 </pre>
 
----
-
-# Sidenote
-
-If you rename all your `master` branches, e.g. run 
-
-```bash
-$ git config --global init.defaultBranch `master-yoda`,
-```
-
-then `slavery will vanish and no longer be on this planet. On Tatooine things might look different.
 
 
 
