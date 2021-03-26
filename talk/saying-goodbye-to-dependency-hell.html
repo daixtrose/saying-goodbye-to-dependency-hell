@@ -326,6 +326,37 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 
 ---
 
+# We Had a Problem and it Nearly Killed Us
+
+.split-40[
+.column[
+<pre>
+  <span style="font-weight:bold;color:#3333FF;">tool_1</span>
+   └── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+        ├── <span style="font-weight:bold;color:#3333FF;">lib_A</span>
+        │   ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+        │   │   └── <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">RxCpp</span>
+        ├── <span style="font-weight:bold;color:#3333FF;">lib_B</span>
+        │   ├── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+        │   │   └── <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">RxCpp</span>
+        └── <span style="font-weight:bold;color:#3333FF;">lib_C</span>
+            └── <span style="font-weight:bold;color:#3333FF;">3rdParty</span>
+                └── <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">RxCpp</span>
+</pre>
+]
+.column[
+- A clone of https://github.com/ReactiveX/RxCpp takes 66 MB of disc space
+- We had a system where approx. 20 different repos had `RxCpp`as a dependency
+- A modules update run took one hour in the workshop       
+</pre>
+> This is a QOI issue and could be mitigated. 
+]
+]
+
+
+
+---
+
 layout: false
 background-image: url(images/DSC_0010_2_DxO.jpg)
 background-size: cover
@@ -471,9 +502,8 @@ background-size: cover
 &nbsp;<br>
 &nbsp;<br>
 - Submodules are bound to commits<br>rather than branches.
-- In a deeply nested structure<br>the updates bubble up the tree. 
-- Changes are not local, but they should.
-> Git add and commit for changes of the *database*, not changes of any files<br>under version control
+- In a deeply nested structure the updates taint the tree. Changes are not local.
+> Git add and commit are abused for changes of the *database*, there are no changes of any files under version control
 - Does this encourage distribution of code into multiple repositories? 
 ]
 .column[
@@ -855,7 +885,7 @@ tool_1
 # Something is missing here: fmt-src was not put here!
 │   │   ├── `fmt`-build 
 │   │   ├── `fmt`-subbuild
-# Due to `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`
+# Due to FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)
 │   │   ├── lib_a-build
 │   │   ├── lib_a-subbuild
 [...]
@@ -870,6 +900,16 @@ tool_1
     ├── lib_A
     └── lib_B
 ```
+
+---
+
+# Findings
+
+- `FetchContent_Declare(some_name SOURCE_DIR /path/to/directory)`<br>
+does **not** fetch the content, but **refers** to it directly
+- This means that the debugger will point to the code below `ws`
+- AFAICS this is the most efficient usage of hard disk space, 
+  since the code for every dependency is stored on disk exactly once    
 
 ---
 
@@ -920,13 +960,13 @@ no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&q
 
 # Sidenote
 
-If you rename all your `master` branches and run 
+If you rename all your `master` branches, e.g. run 
 
 ```bash
 $ git config --global init.defaultBranch `master-yoda`,
 ```
 
-then `slave`ry will vanish and no longer be on this planet.
+then `slavery will vanish and no longer be on this planet. On Tatooine things might look different.
 
 
 
