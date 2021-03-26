@@ -22,6 +22,8 @@ layout: true
 class: middle
 template: inverse
 background-color: gray
+background-image: url(images/Cappuchino.JPG)
+background-size: cover
 
 .center[
 
@@ -29,7 +31,7 @@ background-color: gray
 # Saying Goodbye to Dependency Hell with Git and Modern CMake 
 
 ## ... And a Shell Script 
-Duration: 1:05:42 (#NoEstimates)
+Duration: 0:58:50 (#NoEstimates)
 
 ![](https://www.embo.io/uploads/content/embo-logo_03.png)
 
@@ -67,6 +69,17 @@ https://github.com/daixtrose/saying-goodbye-to-dep-hell
 ![](images/qr-code-for-repo.svg)
 ]
 ]
+
+???
+
+In order to make it easy for you to follow this talk and for everyone who is visually impaired I share 
+the code for this talk on my GitHub account. 
+
+You can download the code and the utilities I present here under permissive licences. 
+The talk and code are distributed under the MIT license. The fotos that I made and use as illustrations
+are available under the Creative Commons Attribution-ShareAlike.
+
+The code that I have stolen and reused here is also under MIT license. So everyone should be fine.   
 
 ---
 
@@ -684,9 +697,9 @@ FetchContent_Declare(
 - The <span style="background-color:yellow;">first</span> call to `FetchContent_Declare` wins. 
   > You can **overwrite dependency settings** in libraries you include!
   > - This obviously only works if the libraries you include uses FetchContent
-  > - change branch
-  > - change source location
-  > - even redirect to a completely different library
+  > - You can change the branch or relase version (if compatible) 
+  > - You can change the source location
+  > - You can even redirect to a completely different library
 
 ---
 
