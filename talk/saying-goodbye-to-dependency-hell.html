@@ -14,8 +14,8 @@
 
 layout: true
 
-<div class="footer"><div class="flexcontainer"><span>.body[[https://ducktrain.io](https://ducktrain.io)]</span>
-<span>.center[emBo++ 2021]</span><span>.body[&copy; 2021 Markus Werle ([github](http://github.com/daixtrose) [linkedin](https://www.linkedin.com/in/markus-werle-04305a12a/))]</span></div></div>
+<div class="footer"><div class="flexcontainer"><span>.body[[https://daixtrose.io](https://ducktrain.io)]</span>
+<span>.center[[C++ User Group Aachen 2022](https://cpp-aachen.github.io/)]</span><span>.body[&copy; 2021-2022 Markus Werle ([github](http://github.com/daixtrose) [linkedin](https://www.linkedin.com/in/markus-werle-04305a12a/))]</span></div></div>
 
 ---
 
@@ -33,19 +33,23 @@ background-size: cover
 ## ... And a Shell Script 
 Duration: 0:58:50 (#NoEstimates)
 
-![](https://www.embo.io/uploads/content/embo-logo_03.png)
 
 ]
 
 ---
 
-layout: false
-background-image: url(https://ducktrain.io/wp-content/uploads/2020/07/Ducktrain_BicycleLane2.png)
+class: middle
+template: inverse
+background-image: url(images/Variantenvielfalt.png)
 background-size: cover
 
-# .fixed-pos-nearly-llc[Visit [https://ducktrain.io](https://ducktrain.io)]
 
-.center[<span><img src=></span>]
+.fixed-pos-nearly-llc[
+
+> ## &copy; MHP, a Porsche Company  
+
+]
+
 
 ---
 
@@ -125,7 +129,7 @@ layout: false
 
 Imagine a RealWorld(TM) example like the following: You are maintaining two tools,
 
-.split-40[
+.split-50[
 .column[
 - `tool_1`
 - `tool_2`
@@ -141,6 +145,11 @@ Also there is an indirect dependency to
 ]
 .column[
 ![](images/NamingThings.png)
+
+> You can check all code examples here:
+> - https://github.com/dep-hell
+> - https://github.com/dep-heaven
+
 ]
 ]
 
@@ -365,8 +374,8 @@ Submodule path '3rdParty/lib_B/3rdParty/libFreeAssange': checked out '668ccf2050
 - A clone of https://github.com/ReactiveX/RxCpp takes 66 MB of disc space
 - We had a system where approx. 20 different repos had `RxCpp` as a dependency
 - A modules update run took one hour in the workshop, because git cloned the very same repository approx. 20 times        
-</pre>
 > This is a QOI issue and could be mitigated. 
+- There is an .red[**ODR violation**] if `lib_A` uses a different version of `RxCpp` than `lib_B` or `lib_C`! 
 ]
 ]
 
@@ -412,6 +421,12 @@ is in submodule '3rdParty/lib_B'
 
 ---
 
+layout: false
+background-image: url(images/DSC_0270.JPG)
+background-size: cover
+
+---
+
 # Entering Hell 
 
 ```bash
@@ -429,18 +444,31 @@ state now, use
     git push origin HEAD:<name-of-remote-branch>
 </pre>
 
-> 
-
-???
+> WTF?
 
 - git is complicated enough to drive away inexperienced people
 - neither `git pull` will give you an indication whether we are up-to-date here
 
 ---
 
-layout: false
-background-image: url(images/DSC_0270.JPG)
-background-size: cover
+# Entering Hell 
+
+```bash
+$ cd 3rdParty/lib_B/3rdParty/libFreeAssange
+$ git add README.md 
+$ git commit -m "some change"
+$ git push
+```
+
+<pre>
+fatal: You are <span style="font-weight:bold;color:#3333FF;background-color: #ff0;">not currently on a branch.</span>
+To push the history leading to the current (detached HEAD)
+state now, use
+
+    git push origin HEAD:<name-of-remote-branch>
+</pre>
+
+> Why don't we get this error message with the first command, `git add`?  
 
 ---
 
@@ -530,6 +558,18 @@ background-size: cover
 - Does this encourage distribution of code into multiple repositories? 
 ]
 .column[
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+> - remember<br>`new file: 3rdParty/lib_A`<br> message in `git status` output?
 ]
 ]
 
@@ -571,6 +611,23 @@ background-size: cover
   - > Craig Scott: *Professional CMake: A Practical Guide*   
 - I wish this book had been written 2 years earlier  
 - Listen to Craig's talks on YouTube, e.g. https://www.youtube.com/watch?v=m0DwB4OvDXk  
+
+---
+
+class: middle
+template: inverse
+background-image: url(images/JurassicPark.png)
+background-size: cover
+
+
+.split-40[
+.column[
+]
+.column[
+> ## CMake: Life finds its way.<br>'Ooh, ahh.' That's how it always starts.<br>But then later, there's running and screaming.  
+]
+]
+
 
 ---
 
@@ -745,12 +802,24 @@ fetchcontent_dependencies( # <-- THIS
 
 # Tool 1 - Directory Structure
 
+```bash
+git clone https://github.com/dep-heaven/tool_1
+tree tool_1
+```
+
 ```
 tool_1
-  ├── include
-  │   └── tool_1
-  ├── src
-  └── test-catch
+├── `CMakeLists.txt`
+...
+├── `dependencies.txt`
+├── include
+...
+├── `setup.sh`
+├── src
+│   ├── fn.cpp
+│   └── tool_1.cpp
+└── test-catch
+    ├── ...
 ```
 
 ---
@@ -1018,12 +1087,26 @@ foreach(dependency ${DEPENDENCIES})
         endif()
     endforeach()
 ```
+---
+
+# This Shell Script Has Potential
+
+```bash
+./setup.sh --help
+
+Usage: ./setup.sh [ -h ] [ -v ] [ -b BRANCH ]
+  -h:         Print this help message.
+  -v:         Verbose
+  -b BRANCH:  Check out BRANCH in every repository 
+              (only if the branch exists).
+  -p:         Pull changes from upstream in every repository.
+```
 
 ---
 
 # This Shell Script Has Potential 
 
-Calling setup.sh to check and update all git repositories
+Calling setup.sh without arguments checks all git repositories (below ws **and** the top-level one) **without** modification. Option `-p` pulls changes from server for all repositories.
 
 <pre>
 [.../tool_1] $ ./setup.sh
@@ -1037,7 +1120,6 @@ Calling setup.sh to check and update all git repositories
 <span style="color:red;">!!!! ===&gt; There are uncommited changes &lt;=== !!!!</span>
 On branch master-yoda
 Your branch is up to date with 'origin/master-yoda'.
-
 Changes not staged for commit:
   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
@@ -1071,7 +1153,19 @@ background-size: cover
 
 ]
 
+---
 
+class: middle
+template: inverse
+background-image: url(images/2019-03-14_IMG_4362.JPG)
+background-size: cover
+
+
+.center[
+
+> # Visit https://daixtrose.de 
+
+]
 
 
 </textarea>
