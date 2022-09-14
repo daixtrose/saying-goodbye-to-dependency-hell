@@ -31,24 +31,11 @@ background-size: cover
 # Saying Goodbye to Dependency Hell with Git and Modern CMake 
 
 ## ... And a Shell Script 
-Duration: 0:58:50 (#NoEstimates)
+Duration: 1:07:50 (#NoEstimates)
 
 
 ]
 
----
-
-class: middle
-template: inverse
-background-image: url(images/Variantenvielfalt.png)
-background-size: cover
-
-
-.fixed-pos-nearly-llc[
-
-> ## &copy; MHP, a Porsche Company  
-
-]
 
 
 ---
@@ -84,6 +71,20 @@ The talk and code are distributed under the MIT license. The fotos that I made a
 are available under the Creative Commons Attribution-ShareAlike.
 
 The code that I have stolen and reused here is also under MIT license. So everyone should be fine.   
+
+---
+
+class: middle
+template: inverse
+background-image: url(images/Variantenvielfalt.png)
+background-size: cover
+
+
+.fixed-pos-nearly-llc[
+
+> ## &copy; MHP, a Porsche Company  
+
+]
 
 ---
 
@@ -760,6 +761,23 @@ FetchContent_Declare(
 
 ---
 
+# Requirements for a Dependency Management with CMake 
+
+- Fix the ODR violation problem via configuration on top level
+- Clone and/or copy dependencies only **once** even when used several times
+- Dependent code (aka libraries) resides as first class citizen
+  - No source code in the build directory
+  - flatten the hierarchy: put all dependencies and sub-dependencies on the same level
+  - Make it possible to **work on branches** for each and every dependency
+    - It is **easy** to switch branches either temporarily or permanently
+  - CMake will detect the changes and rebuild necessary parts
+  - Code changes can easily be commited with no extra work  
+- The debugger points to the very same code location as the editor
+- The solution works with git tags, branches and commits    
+- Be a nice Modern CMake citizen, i.e. stay in CMake context as far as possible
+  - The solution builds even without calling the shell script  
+---
+
 # My Proposal in a Nutshell  
 
 > Create a file named `dependencies.txt` in the top level of your tool repository:
@@ -793,7 +811,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cmake_utilities)
 
-fetchcontent_dependencies( # <-- THIS
+fetchcontent_dependencies( # `<-- THIS FUNCTION CONTAINS ALL MAGIC`
     FILENAME `dependencies.txt` 
     WORKSPACE ws)
 ```
@@ -834,7 +852,7 @@ tool_1
   └── test-catch
 ```
 
-Now let's cmake it:
+Now let's cmake it **without using the shell script**:
 
 ```bash
 [.../tool_1] $ mkdir build
